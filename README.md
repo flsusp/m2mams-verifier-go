@@ -1,0 +1,1 @@
+# m2mams-verifier-go
