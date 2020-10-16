@@ -1,0 +1,42 @@
+package verifier
+
+import (
+	"crypto/rsa"
+	"github.com/dgrijalva/jwt-go"
+	"github.com/stretchr/testify/assert"
+	"testing"
+)
+
+var user1SignedToken = "eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJrcCI6InRlc3Q0IiwidHMiOjE2MDI3NjQ1MDAsInVpZCI6InlvdXJfZW1haWxAZXhhbXBsZS5jb20ifQ.q0KWAdxWFepKVPzAd8JA94_2MX6yKHMKwrKF6Ir_KGZjWUXylwo5ocU96C2tCUm4SbeGcj6jUVp7r7OfWvtH8WVgpMTQK5uqs1HI9tagrT9-nCdwR6eu7tPt-P6NVBBJBhoYaYLUp-YI3poJAJmVZPp70roW20iByJtrglyH2K_vmiwTbivXecStt5ZknQs6GqLG_jmn8UmcPopSSd-ObU-HM-f1DFJ5NbliNyz4gkJ3n0gBnxbcKMov78LRs3V8TyLCQ5aJ4U5ofvvsvr0_KRqQw5C0WSa3XaPrHjQr0nSpUKg1_5Tiy0248D6OKdA3SfK2PWWi6dAZ6YgWrYcM4Pnqy7whRrHHE5E4q9o6PvNQW63HGTs4ehOMu3rwZoetKk7GQWrLY6s9dQhigQcB2RkSswCod2zkthOEyCoqieec8758GpVGKOEvRELXMVCoWMk1uhh5Oa92-Wyn_FTuYNxVaHs1UwVK8GOiE1uX7x6S0ouy9okKf7ieZjAiqjLCKV_OryQXueBhSOIfi_3LhgWvVDR_mTFVRubf5SmlM5hM1UJFJsjCoV_xE4TQDh8SgHyou2LrHBRH-AK4g0Yw99l54EMNiv2EKgafZmPoQynO1ZSb2dMeDu1UZCNQGthQYiaxG1ucTW2VigVKQy91uaG7mIBNpgJvCf0ff364R3A"
+var user2SignedToken = "eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJrcCI6InRlc3QzIiwidHMiOjE2MDI4NzY1MDEsInVpZCI6InlvdXJfZW1haWxAZXhhbXBsZS5jb20ifQ.RpjOo6f3cDX-SfhgwNEscVHaE2gdfHcYtwM0dJqFurjWBb0XksHFnItMxcfRU4uHqPn6Z9utHBsBixSsYR4o7JFYXHJHtXp-gvyUBTMmz4aRsTj6ld7uumjSE0Jh5z7KJLk22zbHQVcprfa3khe1k3n2AU2QdTXZLEPkPSHYBJFookauGudP7ds-uorFNhCFyMRMPLlB5l0-VWZaz3Ud2OD7c2Gmc0zb323huhHMaEQ9ZdwrEjtlfFyK0swHcoN8g3jny3nZP6YHZp52NsgujnQqboLaaMvoTcVnhmoEv6kePGbFZfyZ1aSBmIoiLA5cGJrhI47mrvkXZ9FtPf8ObckudZp2xMhPLL-bR_djgIHtI2HKmU5ubN-C-5kKZbpP9HawGqhyqr4T7Cq5TLyBvSR6PTui0axIPW_VplFL6eSf9bHAf_MFajanQUslrJi6roIEoFJP0RODSPV5XS12JIwI277QBreDuCb54AcMSW9mpH4ZND0zHKqh0h_oJcIkVAX2p-76hsQquawvazz5jxj9XvX9VFRfDikwv6CauXl5GHB0FlV45I0BDRuKuPZG5G7-Vufn1Dx979fvYSyel1QTPEfQXtfcmfi9LHujAOuwFn2JOWn0SBZYazyvRXsK7ClxV-BvyVvBMzRYtfPpuQSzW3m62HCyeRka9xiZamk"
+var user1PublicKeyPem = "-----BEGIN PUBLIC KEY-----\nMIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAsht/p3Du3x3NVvoBIwz6\njUJ/kRZ69+QWtaqLxLWaAf/BDH4z+nwKTOukRnrhzS7FpD0EBXWOcnpYDDvgmzWi\na8pBntSVk/Gci42dHVCDhEgCCAWX2I8Vl8vdPfkGhLZOJ9Uks7DJ9udRrLI/H1HK\n+oAKWNYGuSC3rm0+MaCpmzTbyRJgEQKaC6n9r1HI51dOte4ZSyfWSac9oC909dc/\noZJKce3sWM26iDBhLE2kTTBmDLyMdmBoE87Z2c3AuC9gHeXbNwAN6I9hRP48U9xH\nowMyvWehvGH8wWOKCWF/C1vcoiSMd9hXO/7g3ZqCzGzPHFmCtQX++e2M3F4PIR7j\n55Q0nK8keXZK7T7vB74Je4ga1SjRXga5VqLPngb39vMvaZDcqbb1Dm/R5cukUCjj\n3+ILIA3MOEGZw7dyx8lUIIoOgVwY3B2VS7jXnhqnA5NR+sCJQZhzNqH3bxbeGtsP\nuicxk2LGUoVivngRyjn4UVzg0I+IxqUNg0Z/DkL/UasNyNN8XAPTVDmX5E89q+H+\nji3b8ldpxslTTWQUzDlCeyUeq9H7rofAyQo+SyuQvVrk9XH5KvrDVkNcmzEnTdTI\ncx3RsIKXXNWohJsLKKisBm6d2WmCpFgNsIypvMGih3YkttlQpLvHpcRjl6KhOgGN\nxtkxnUP/Q2pRb2j6NDF0FOUCAwEAAQ==\n-----END PUBLIC KEY-----\n"
+
+type FakeKeyProvider struct {
+	PublicKey string
+}
+
+func (kp FakeKeyProvider) LoadPublicKey(uid string, keyPair string) (*rsa.PublicKey, error) {
+	return jwt.ParseRSAPublicKeyFromPEM([]byte(kp.PublicKey))
+}
+
+func TestVerifyValidSignedToken(t *testing.T) {
+	verifier := Verifier{
+		KeyProvider: FakeKeyProvider{
+			PublicKey: user1PublicKeyPem,
+		},
+	}
+
+	err := verifier.VerifySignedToken(user1SignedToken)
+	assert.NoError(t, err)
+}
+
+func TestVerifyInvalidSignedToken(t *testing.T) {
+	verifier := Verifier{
+		KeyProvider: FakeKeyProvider{
+			PublicKey: user1PublicKeyPem,
+		},
+	}
+
+	err := verifier.VerifySignedToken(user2SignedToken)
+	assert.Error(t, err, "invalid token")
+}
