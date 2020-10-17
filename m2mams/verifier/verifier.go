@@ -14,7 +14,7 @@ type Verifier struct {
 func (v Verifier) VerifySignedToken(tk string) error {
 	parsedToken, err := jwt.Parse(tk, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
-			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
 		claims := token.Claims.(jwt.MapClaims)
 		uid := claims["uid"].(string)
