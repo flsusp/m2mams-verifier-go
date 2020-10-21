@@ -2,27 +2,29 @@ package verifier
 
 import (
 	"crypto/rsa"
-	"github.com/dgrijalva/jwt-go"
+	"github.com/flsusp/m2mams-verifier-go/m2mams/kprovider"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
 var user1SignedToken = "eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJrcCI6InRlc3Q0IiwidHMiOjE2MDI3NjQ1MDAsInVpZCI6InlvdXJfZW1haWxAZXhhbXBsZS5jb20ifQ.q0KWAdxWFepKVPzAd8JA94_2MX6yKHMKwrKF6Ir_KGZjWUXylwo5ocU96C2tCUm4SbeGcj6jUVp7r7OfWvtH8WVgpMTQK5uqs1HI9tagrT9-nCdwR6eu7tPt-P6NVBBJBhoYaYLUp-YI3poJAJmVZPp70roW20iByJtrglyH2K_vmiwTbivXecStt5ZknQs6GqLG_jmn8UmcPopSSd-ObU-HM-f1DFJ5NbliNyz4gkJ3n0gBnxbcKMov78LRs3V8TyLCQ5aJ4U5ofvvsvr0_KRqQw5C0WSa3XaPrHjQr0nSpUKg1_5Tiy0248D6OKdA3SfK2PWWi6dAZ6YgWrYcM4Pnqy7whRrHHE5E4q9o6PvNQW63HGTs4ehOMu3rwZoetKk7GQWrLY6s9dQhigQcB2RkSswCod2zkthOEyCoqieec8758GpVGKOEvRELXMVCoWMk1uhh5Oa92-Wyn_FTuYNxVaHs1UwVK8GOiE1uX7x6S0ouy9okKf7ieZjAiqjLCKV_OryQXueBhSOIfi_3LhgWvVDR_mTFVRubf5SmlM5hM1UJFJsjCoV_xE4TQDh8SgHyou2LrHBRH-AK4g0Yw99l54EMNiv2EKgafZmPoQynO1ZSb2dMeDu1UZCNQGthQYiaxG1ucTW2VigVKQy91uaG7mIBNpgJvCf0ff364R3A"
 var user2SignedToken = "eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJrcCI6InRlc3QzIiwidHMiOjE2MDI4NzY1MDEsInVpZCI6InlvdXJfZW1haWxAZXhhbXBsZS5jb20ifQ.RpjOo6f3cDX-SfhgwNEscVHaE2gdfHcYtwM0dJqFurjWBb0XksHFnItMxcfRU4uHqPn6Z9utHBsBixSsYR4o7JFYXHJHtXp-gvyUBTMmz4aRsTj6ld7uumjSE0Jh5z7KJLk22zbHQVcprfa3khe1k3n2AU2QdTXZLEPkPSHYBJFookauGudP7ds-uorFNhCFyMRMPLlB5l0-VWZaz3Ud2OD7c2Gmc0zb323huhHMaEQ9ZdwrEjtlfFyK0swHcoN8g3jny3nZP6YHZp52NsgujnQqboLaaMvoTcVnhmoEv6kePGbFZfyZ1aSBmIoiLA5cGJrhI47mrvkXZ9FtPf8ObckudZp2xMhPLL-bR_djgIHtI2HKmU5ubN-C-5kKZbpP9HawGqhyqr4T7Cq5TLyBvSR6PTui0axIPW_VplFL6eSf9bHAf_MFajanQUslrJi6roIEoFJP0RODSPV5XS12JIwI277QBreDuCb54AcMSW9mpH4ZND0zHKqh0h_oJcIkVAX2p-76hsQquawvazz5jxj9XvX9VFRfDikwv6CauXl5GHB0FlV45I0BDRuKuPZG5G7-Vufn1Dx979fvYSyel1QTPEfQXtfcmfi9LHujAOuwFn2JOWn0SBZYazyvRXsK7ClxV-BvyVvBMzRYtfPpuQSzW3m62HCyeRka9xiZamk"
-var user1PublicKeyPem = "-----BEGIN PUBLIC KEY-----\nMIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAsht/p3Du3x3NVvoBIwz6\njUJ/kRZ69+QWtaqLxLWaAf/BDH4z+nwKTOukRnrhzS7FpD0EBXWOcnpYDDvgmzWi\na8pBntSVk/Gci42dHVCDhEgCCAWX2I8Vl8vdPfkGhLZOJ9Uks7DJ9udRrLI/H1HK\n+oAKWNYGuSC3rm0+MaCpmzTbyRJgEQKaC6n9r1HI51dOte4ZSyfWSac9oC909dc/\noZJKce3sWM26iDBhLE2kTTBmDLyMdmBoE87Z2c3AuC9gHeXbNwAN6I9hRP48U9xH\nowMyvWehvGH8wWOKCWF/C1vcoiSMd9hXO/7g3ZqCzGzPHFmCtQX++e2M3F4PIR7j\n55Q0nK8keXZK7T7vB74Je4ga1SjRXga5VqLPngb39vMvaZDcqbb1Dm/R5cukUCjj\n3+ILIA3MOEGZw7dyx8lUIIoOgVwY3B2VS7jXnhqnA5NR+sCJQZhzNqH3bxbeGtsP\nuicxk2LGUoVivngRyjn4UVzg0I+IxqUNg0Z/DkL/UasNyNN8XAPTVDmX5E89q+H+\nji3b8ldpxslTTWQUzDlCeyUeq9H7rofAyQo+SyuQvVrk9XH5KvrDVkNcmzEnTdTI\ncx3RsIKXXNWohJsLKKisBm6d2WmCpFgNsIypvMGih3YkttlQpLvHpcRjl6KhOgGN\nxtkxnUP/Q2pRb2j6NDF0FOUCAwEAAQ==\n-----END PUBLIC KEY-----\n"
+var user3SignedToken = "eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJrcCI6ImlkX3JzYSIsInRzIjoxNjAzMjM0MjY1LCJ1aWQiOiJmbHN1c3BAZ21haWwuY29tIn0.qJtYDWR27dCzIdzrfMD1tTPACc1eAa7dCQ747A_bn94BcQR0OjAAm87iB8zJKS7UQlJgB6v_-yyrYKa9-VPlfRgtGjUaQbUXOEZ5WtKwHxW8DB7YOQLDUPQOZrXLQUv1Rl2dJBnCy4XuwthvEmz1_SXBWve8GSEltl5lVu3aeNv5jj18ZXu0egIdRlu9R1mBfXs3zgYFhsWEIVKWFE1KRo1LrVzDe5XDRMj8B9AGU6WCX0dbqX6wnv1ekWWqnCE_9QtUg_x6HYIPL9Nkdmq09AQ9fAe3qU8Qn8Cm8yJ37_OjeHFJIyv0T-EWQL8CFjh8Qrczi9tO5Ugr9_bg6cZh8l7KyzXcDa3oOHHo5wl64uzA1GMmjG4knunMyd7MFZmPGEC0cGUklGAkXDFIF3RUeRhbzdOgRg2VQ0LE7-jQWi36_sLkj3tRNgsT7pAbLDf_wTzhMXHHhzZLzxwWOAVBhtTZO_DjzrNbNeN4Ubgak9T3bo6AiFjbt_Bmedq1RG_sBuaOUSNEiiZ3Jp9fABfZ90lQN0w5GAqPLtZoUdQRzXUQFnMcRlBs2ZBMC4oeJTAQOMutxRuAOzvnHeaZ-NH7eRZP3NWDejaxLZbz2AL_7-XaC-DvD-HHLDCzTjGHZLVXWMuNlfA_X0voKHWHvQu0zgyLCwAJywMb8EXECGNcs1M"
+var user1KPIXPublicKeyPem = "-----BEGIN PUBLIC KEY-----\nMIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAsht/p3Du3x3NVvoBIwz6\njUJ/kRZ69+QWtaqLxLWaAf/BDH4z+nwKTOukRnrhzS7FpD0EBXWOcnpYDDvgmzWi\na8pBntSVk/Gci42dHVCDhEgCCAWX2I8Vl8vdPfkGhLZOJ9Uks7DJ9udRrLI/H1HK\n+oAKWNYGuSC3rm0+MaCpmzTbyRJgEQKaC6n9r1HI51dOte4ZSyfWSac9oC909dc/\noZJKce3sWM26iDBhLE2kTTBmDLyMdmBoE87Z2c3AuC9gHeXbNwAN6I9hRP48U9xH\nowMyvWehvGH8wWOKCWF/C1vcoiSMd9hXO/7g3ZqCzGzPHFmCtQX++e2M3F4PIR7j\n55Q0nK8keXZK7T7vB74Je4ga1SjRXga5VqLPngb39vMvaZDcqbb1Dm/R5cukUCjj\n3+ILIA3MOEGZw7dyx8lUIIoOgVwY3B2VS7jXnhqnA5NR+sCJQZhzNqH3bxbeGtsP\nuicxk2LGUoVivngRyjn4UVzg0I+IxqUNg0Z/DkL/UasNyNN8XAPTVDmX5E89q+H+\nji3b8ldpxslTTWQUzDlCeyUeq9H7rofAyQo+SyuQvVrk9XH5KvrDVkNcmzEnTdTI\ncx3RsIKXXNWohJsLKKisBm6d2WmCpFgNsIypvMGih3YkttlQpLvHpcRjl6KhOgGN\nxtkxnUP/Q2pRb2j6NDF0FOUCAwEAAQ==\n-----END PUBLIC KEY-----\n"
+var user2PKCS1PublicKeyPem = "-----BEGIN PUBLIC KEY-----\nMIICCgKCAgEA6H4tpVmP24QDLT/baaosD9c84hsiYwr2RT9wd7HjkGAddehsNfN1\nboKriXAupfxyihBcUv6KJq3D8pnMzOrrzf6z1cRUmbKJBrx3Zd0hHVcwLTMfBJtK\nKfp0gfNwnXamROV+THmTPMDTOZH3BZUr+0cCE318wVEOMcpg/0mv2sR/lT9zP19l\ncpZSw7RaOAVICvwr1CS7BqFDOKdi5+K17u+khucWwddygJzQSfXVA2Q6geVcTZHx\nXZpwJHaVEpPrqxnpa8+jrELI+m3IorBSfyI35ESyeNM/GpNfqi00h+pQPg8IICGr\ns0nAACkTUkh7X4kWOIxv+bEBZ+4d6hS4dChhyHHseN+EKwq5J7Pr+XqcgE6JSC3E\nNDpU2EMUGfDECAg3vyvX2ys7Be+tntwQI02YUjGnXB22malLWbAvuHPfwMPg4PS9\nh0IdqQDvMp0Ky3q73GueVfautnZbOm/8M6aoFyRRWoOJVBfK2dGAYsCSpCR2TUbB\nCZw61G2ANl7sf0VuKu213ec99DGe9MSNJ2vM2iAdlv+ffJ6KhxELHFViZcOK6HM1\nbIs1MgaildeRYDHGMRu1HO/OkRuFiL91TzaPCgdp+gsVVp8DxnkLKuMpBxGJRI3g\njB+WQffo5iJsNTM5edcc0Lm7+sXQu5OU71u+ib82zaNKNcNpDPBX9R0CAwEAAQ==\n-----END PUBLIC KEY-----"
 
 type FakeKeyProvider struct {
 	PublicKey string
 }
 
 func (kp FakeKeyProvider) LoadPublicKey(uid string, keyPair string) (*rsa.PublicKey, error) {
-	return jwt.ParseRSAPublicKeyFromPEM([]byte(kp.PublicKey))
+	return kprovider.ParseRSAPublicKeyFromPEM([]byte(kp.PublicKey))
 }
 
-func TestVerifyValidSignedToken(t *testing.T) {
+func TestVerifyValidPKIXSignedToken(t *testing.T) {
 	verifier := Verifier{
 		KeyProvider: FakeKeyProvider{
-			PublicKey: user1PublicKeyPem,
+			PublicKey: user1KPIXPublicKeyPem,
 		},
 	}
 
@@ -33,10 +35,21 @@ func TestVerifyValidSignedToken(t *testing.T) {
 func TestVerifyInvalidSignedToken(t *testing.T) {
 	verifier := Verifier{
 		KeyProvider: FakeKeyProvider{
-			PublicKey: user1PublicKeyPem,
+			PublicKey: user1KPIXPublicKeyPem,
 		},
 	}
 
 	err := verifier.VerifySignedToken(user2SignedToken)
 	assert.Error(t, err, "invalid token")
+}
+
+func TestVerifyValidPKCS1SignedToken(t *testing.T) {
+	verifier := Verifier{
+		KeyProvider: FakeKeyProvider{
+			PublicKey: user2PKCS1PublicKeyPem,
+		},
+	}
+
+	err := verifier.VerifySignedToken(user3SignedToken)
+	assert.NoError(t, err)
 }
