@@ -11,7 +11,12 @@ type Verifier struct {
 	KeyProvider kprovider.KeyProvider
 }
 
-func (v Verifier) VerifySignedToken(tk string) error {
+type VerificationResult struct {
+	uid string
+	keyPair string
+}
+
+func (v Verifier) VerifySignedToken(tk string) (*VerificationResult, error) {
 	parsedToken, err := jwt.Parse(tk, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
@@ -24,11 +29,17 @@ func (v Verifier) VerifySignedToken(tk string) error {
 	})
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if !parsedToken.Valid {
-		return errors.New("invalid token")
+		return nil, errors.New("invalid token")
 	}
-	return nil
+
+	claims := parsedToken.Claims.(jwt.MapClaims)
+
+	return &VerificationResult{
+		uid: claims["uid"].(string),
+		keyPair: claims["kp"].(string),
+	}, nil
 }
