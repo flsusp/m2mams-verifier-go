@@ -31,8 +31,8 @@ func TestVerifyValidPKIXSignedToken(t *testing.T) {
 	result, err := verifier.VerifySignedToken(user1SignedToken)
 	assert.NoError(t, err)
 
-	assert.Equal(t, result.uid, "your_email@example.com")
-	assert.Equal(t, result.keyPair, "test4")
+	assert.Equal(t, result.Uid, "your_email@example.com")
+	assert.Equal(t, result.KeyPair, "test4")
 }
 
 func TestVerifyInvalidSignedToken(t *testing.T) {
@@ -56,6 +56,6 @@ func TestVerifyValidPKCS1SignedToken(t *testing.T) {
 	result, err := verifier.VerifySignedToken(user3SignedToken)
 	assert.NoError(t, err)
 
-	assert.Equal(t, result.uid, "test@example.com")
-	assert.Equal(t, result.keyPair, "id_rsa")
+	assert.Equal(t, result.Uid, "test@example.com")
+	assert.Equal(t, result.KeyPair, "id_rsa")
 }

@@ -12,8 +12,8 @@ type Verifier struct {
 }
 
 type VerificationResult struct {
-	uid string
-	keyPair string
+	Uid     string
+	KeyPair string
 }
 
 func (v Verifier) VerifySignedToken(tk string) (*VerificationResult, error) {
@@ -39,7 +39,7 @@ func (v Verifier) VerifySignedToken(tk string) (*VerificationResult, error) {
 	claims := parsedToken.Claims.(jwt.MapClaims)
 
 	return &VerificationResult{
-		uid: claims["uid"].(string),
-		keyPair: claims["kp"].(string),
+		Uid:     claims["uid"].(string),
+		KeyPair: claims["kp"].(string),
 	}, nil
 }
